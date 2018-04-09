@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+#CSWS[CD With Steroids]
+#This file is part of CSWS
+#CSWS is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#CSWS is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#You should have received a copy of the GNU General Public License
+#along with CSWS  If not, see <http://www.gnu.org/licenses/>.
+
+# Checks if there are arguments
+if [[ "$#" -eq 0 ]]
+then
+    # Creates an empty array
+    options=()
+    
+    # Reads from the .bookmarks file to creates the list
+    while read line_stream
+    do
+        # Creates an entry per lines. No index is used
+        options+=("${line_stream}" "")
+    # Send the stdout of file as stdin to read command
+    done < ~/.bookmarks
+    
+    # Connect a custom FD to stdoutput
+    exec 3>&1
+    
+    # Creates the simple dialog interface
+    selection=$(dialog --clear --title 'CDWS: ~/.bookmarks' --menu "Select a folder:" 0 0 4 "${options[@]}" 2>&1 1>&3)
+    
+    # Clears the screen
+    clear
+    
+    # Change the directory
+    cd "$selection"
+    
+else
+    # Checks if the add option is requested.
+    if [[ "$1" == "-a" ]]
+    then
+        # Checks if the user has requested a specific folder 
+        if [[ "$#" -eq 1 ]]
+        then
+            # The user has not specified a specific folder, then, save the current directory.
+            echo "$PWD" >> ~/.bookmarks
+            echo "[I] - Added folder: $PWD"
+        else
+            # The user has specified a specific folder, then save it.
+            echo "$2" >> ~/.bookmarks
+            echo "[I] - Added folder: $2"
+        fi
+        
+    elif [[ "$1" == "-d" ]]
+    then
+        # Checks if the user has requested a specific folder
+        if [[ "$#" -eq 1 ]]
+        then
+            # The user has not specified a specific folder, then, delete the current directory.
+            # Uses the global substitution ${VARIABILE//pattern/replace/} to escape the slash character
+            sed -i '/'${PWD//'/'/'\/'}'/d' ~/.bookmarks
+            echo "[I] - Removed folder: $PWD"
+        else
+            # Removes the requested folder from bookmarks file
+            sed -i '/'${2//'/'/'\/'}'/d' ~/.bookmarks
+            echo "[I] - Removed folder: $2"
+        fi
+    else
+        # Invalid argument
+        echo "[E] - Invalid argument: $1"
+    fi
+    
+fi
