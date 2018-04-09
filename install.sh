@@ -50,4 +50,5 @@ fi
 
 # Adds the alias to ~/.bashrc file. The source command is essential to change directory into current shell
 echo "alias ccc='source /usr/bin/cdws'" >> ~/.bashrc
-echo "[I] - Setup completed, restart the shell to reload the .bashrc file!"
+# Reloads the ~/.bashrc file. Thanks @TheMiddle :D
+source ~/.bashrc
